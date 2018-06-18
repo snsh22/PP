@@ -3,6 +3,7 @@ package comm.comuqas.photopicker
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -39,12 +40,28 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         iv.setOnClickListener(this)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == galleryRequestCode && resultCode == Activity.RESULT_OK) {
-            val imageUrl = data.data
+            val imageUrl = data?.data
             iv.setImageURI(imageUrl)
             Log.e("asdf", "imageUrl " + imageUrl!!.path)
+
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(File(imageUrl.path).absolutePath, options)
+            val imageHeight = options.outHeight
+            val imageWidth = options.outWidth
+            if (imageHeight > 4096 || imageWidth > 4096) {
+                val opts = BitmapFactory.Options()
+                opts.inSampleSize = 4
+                val bitmap = BitmapFactory.decodeFile(imageUrl.toString(), opts)
+                iv.setImageBitmap(bitmap)
+            } else {
+                /*Picasso.get()
+                        .load(File(imageUrl.path)) // Uri of the picture
+                        .into(iv)*/
+            }//for vivo phone
 
             val imageFile = File(MyImageFilePath.getPath(applicationContext, imageUrl))
             /*try {
